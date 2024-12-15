@@ -10,9 +10,9 @@ const Profile = () => {
   const email = "johndoe@example.com"; // Example email, replace with actual user email
   const username = "JohnDoe"; // Example username
 
-  const handleLogout = () => {
-    // Add logout logic here
-  };
+  // const handleLogout = () => {
+  //   // Add logout logic here
+  // };
 
   return (
     <section className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden">
