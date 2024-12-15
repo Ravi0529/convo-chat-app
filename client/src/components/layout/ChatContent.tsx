@@ -73,6 +73,27 @@ const ChatContent = () => {
           text: "You too",
           sender: "me",
           timestamp: "09:52 AM"
+        },
+        {
+          id: 13,
+          type: "image",
+          src: "/avatar-placeholder.png",
+          sender: "me",
+          timestamp: "09:53 AM"
+        },
+        {
+          id: 14,
+          type: "video",
+          src: "https://example.com/video.mp4",
+          sender: "other",
+          timestamp: "09:54 AM"
+        },
+        {
+          id: 15,
+          type: "document",
+          src: "https://example.com/document.pdf",
+          sender: "me",
+          timestamp: "09:55 AM"
         }
       ])
     
@@ -83,7 +104,26 @@ const ChatContent = () => {
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[70%] sm:max-w-md p-3 rounded-lg ${message.sender === 'me' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white'} shadow-md`}>
-                  <p className="break-words">{message.text}</p>
+                  {message.type === "image" && (
+                    <img src={message.src} alt="Shared content" className="max-w-full rounded-lg border-1 border-gray-300" style={{ width: '100%', height: 'auto' }} />
+                  )}
+                  {message.type === "video" && (
+                    <video controls className="max-w-full rounded-lg border-1 border-gray-300" style={{ width: '100%', height: 'auto' }}>
+                      <source src={message.src} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  )}
+                  {message.type === "document" && (
+                    <div 
+                      onClick={() => window.open(message.src, '_blank')} 
+                      className="border-2 border-solid bg-gray-300 border-gray-400 p-4 rounded-lg text-center cursor-pointer"
+                    >
+                      <p className="text-gray-700">Document: {message.src.split('/').pop()}</p>
+                    </div>
+                  )}
+                  {message.type === undefined && (
+                    <p className="break-words">{message.text}</p>
+                  )}
                   <span className={`text-xs ${message.sender === 'me' ? 'text-gray-300' : 'text-gray-500'} dark:text-gray-400`}>{message.timestamp}</span>
                 </div>
               </div>

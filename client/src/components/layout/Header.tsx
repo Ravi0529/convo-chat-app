@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react"
 import { BsThreeDotsVertical } from "react-icons/bs"
-import { MdNotificationsActive } from "react-icons/md"
 import { HiMiniUserGroup } from "react-icons/hi2"
 import { FiSun, FiMoon } from "react-icons/fi"
 import { BiLogOut } from "react-icons/bi"
@@ -48,10 +47,6 @@ const Header = () => {
                         {/* Desktop Menu */}
                         <div className="hidden md:flex items-center space-x-8 text-gray-900 dark:text-white">
                             <div className="flex items-center space-x-2 cursor-pointer">
-                                <MdNotificationsActive size={24} />
-                                <span>Notifications</span>
-                            </div>
-                            <div className="flex items-center space-x-2 cursor-pointer">
                                 <HiMiniUserGroup size={24} />
                                 <span>New Group</span>
                             </div>
@@ -90,9 +85,6 @@ const Header = () => {
 
                             {showMenu && (
                                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border dark:border-gray-700">
-                                    <div className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-white transition-colors duration-200">
-                                        <span>Notifications</span>
-                                    </div>
                                     <div className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-white transition-colors duration-200">
                                         <span>New Group</span>
                                     </div>
