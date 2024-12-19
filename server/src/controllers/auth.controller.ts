@@ -70,9 +70,53 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const login = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { username, password } = req.body;
 
-}
+        if (!username) {
+            res.status(400).json({ error: "Username is required" });
+            return;
+        }
 
-export const logout = async (req: Request, res: Response): Promise<void> => {
+        if (!password) {
+            res.status(400).json({ error: "Password is required" });
+            return;
+        }
 
-}
+        const user = await User.findOne({ username }).select("+password");
+
+        if (!user) {
+            res.status(400).json({ error: "User not found" });
+            return;
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordCorrect) {
+            res.status(400).json({ error: "Invalid password" });
+            return;
+        }
+
+
+        if (!user || !isPasswordCorrect) {
+            res.status(400).json({ error: "Invalid username or password" });
+            return;
+        }
+
+        generateTokenAndSetCookie(user._id.toString(), res);
+
+        res.status(200).json({ user });
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const logout = async (req: Request, res: Response) => {
+    try {
+        res.clearCookie("jwt");
+        res.status(200).json({ message: "Logged out successfully" });
+
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
