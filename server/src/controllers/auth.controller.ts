@@ -10,6 +10,13 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Extend the Request interface to include the user property
+interface CustomRequest extends Request {
+    user?: {
+        _id: string;
+    };
+}
+
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
         const { fullName, username, email, password } = req.body;
@@ -111,12 +118,32 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
-export const logout = async (req: Request, res: Response) => {
+export const logout = async (req: Request, res: Response): Promise<void> => {
     try {
         res.clearCookie("jwt");
         res.status(200).json({ message: "Logged out successfully" });
 
     } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const home = async (req: CustomRequest, res: Response): Promise<void> => {
+    try {
+        if (!req.user || !req.user._id) {
+            res.status(401).json({ error: "Unauthorized: No User Found" });
+            return;
+        }
+
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
+
+        res.status(200).json({ user });
+    } catch (error) {
+        console.error(error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
