@@ -1,11 +1,19 @@
 import { Request, Response } from "express";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
-import { generateTokenAndSetCookie } from "../util/generateTokenAndSetCookie.js";
+import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
         const { fullName, username, email, password } = req.body;
+        let { avatar } = req.body;
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
@@ -29,7 +37,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         if (!passwordRegex.test(password)) {
             res.status(400).json({
                 error:
-                    "Password must be at least 8 characters long and include letters, numbers, capital character and special characters.",
+                    "Password must be at least 8 characters long and include letters, numbers, capital character, and special characters.",
             });
             return;
         }
@@ -37,11 +45,18 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        let avatarUrl = "/avatar-placeholder.png"; // Default avatar
+        if (avatar) {
+            const uploadedAvatar = await cloudinary.uploader.upload(avatar);
+            avatarUrl = uploadedAvatar.secure_url;
+        }
+
         const newUser = new User({
             fullName,
             username,
             email,
             password: hashedPassword,
+            avatar: avatarUrl,
         });
 
         await newUser.save();
@@ -54,6 +69,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
+
+}
+
+export const logout = async (req: Request, res: Response): Promise<void> => {
 
 }
