@@ -2,13 +2,7 @@ import { Request, Response } from "express";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
-import { v2 as cloudinary } from "cloudinary";
-
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import cloudinary from "../utils/cloudinary.js";
 
 // Extend the Request interface to include the user property
 interface CustomRequest extends Request {
@@ -143,7 +137,6 @@ export const home = async (req: CustomRequest, res: Response): Promise<void> => 
 
         res.status(200).json({ user });
     } catch (error) {
-        console.error(error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
