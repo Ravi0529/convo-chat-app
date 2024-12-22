@@ -2,19 +2,17 @@ import { Request, Response } from "express";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
-import cloudinary from "../utils/cloudinary.js";
+import { v2 as cloudinary } from "cloudinary";
 
-// Extend the Request interface to include the user property
 interface CustomRequest extends Request {
     user?: {
         _id: string;
-    };
+    };  
 }
 
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { fullName, username, email, password } = req.body;
-        let { avatar } = req.body;
+        const { fullName, username, email, password, avatar } = req.body;
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
@@ -34,11 +32,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        const passwordRegex = /^(?=.*[A-Z])(?=.*[a-zA-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
         if (!passwordRegex.test(password)) {
             res.status(400).json({
                 error:
-                    "Password must be at least 8 characters long and include letters, numbers, capital character, and special characters.",
+                    "Password must be at least 8 characters long and include letters, numbers, capital characters, and special characters.",
             });
             return;
         }
@@ -46,10 +44,19 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        let avatarUrl = "/avatar-placeholder.png"; // Default avatar
+        let avatarUrl = "/avatar-placeholder.png";
         if (avatar) {
-            const uploadedAvatar = await cloudinary.uploader.upload(avatar);
-            avatarUrl = uploadedAvatar.secure_url;
+            try {
+                const uploadResponse = await cloudinary.uploader.upload(avatar, {
+                    folder: "avatars", // Specify folder in Cloudinary
+                    resource_type: "image",
+                });
+                avatarUrl = uploadResponse.secure_url;
+            } catch (error) {
+                console.error("Cloudinary upload error:", error);
+                res.status(500).json({ error: "Avatar upload failed" });
+                return;
+            }
         }
 
         const newUser = new User({
@@ -66,6 +73,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
         res.status(201).json({ newUser });
     } catch (error) {
+        // console.error(error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
@@ -125,7 +133,7 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
 export const home = async (req: CustomRequest, res: Response): Promise<void> => {
     try {
         if (!req.user || !req.user._id) {
-            res.status(401).json({ error: "Unauthorized: No User Found" });
+            res.status(401).json({ error: "Unauthorized: No Token Provided" });
             return;
         }
 
@@ -134,8 +142,8 @@ export const home = async (req: CustomRequest, res: Response): Promise<void> => 
             res.status(404).json({ error: "User not found" });
             return;
         }
-
         res.status(200).json({ user });
+
     } catch (error) {
         res.status(500).json({ error: "Internal Server Error" });
     }
